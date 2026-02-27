@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.child_name }} - Patient Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; }
+    .profile-avatar { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: white; }
+    .profile-avatar.male { background: #0ea5e9; }
+    .profile-avatar.female { background: #ec4899; }
+    .profile-avatar.unknown { background: #a78bfa; }
+    .risk-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .risk-badge.high { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .risk-badge.medium { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .risk-badge.low { background: rgba(16,185,129,0.1); color: #10b981; }
+    .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
+    .info-item { text-align: center; padding: 12px; background: var(--bg-light); border-radius: 8px; }
+    .info-item-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-item-value { font-size: 15px; font-weight: 600; color: var(--text-dark); margin-top: 2px; }
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .timeline-item { position: relative; margin-bottom: 24px; }
+    .timeline-dot { position: absolute; left: -28px; top: 4px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px var(--border); }
+    .timeline-dot.high { background: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
+    .timeline-dot.medium { background: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; }
+    .timeline-dot.low { background: #10b981; box-shadow: 0 0 0 2px #10b981; }
+    .timeline-dot.note { background: #6366f1; box-shadow: 0 0 0 2px #6366f1; }
+    .timeline-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .timeline-date { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Back -->
+    <a href="{{ url_for('patients') }}" class="text-muted text-decoration-none mb-3 d-inline-flex align-items-center gap-1" style="font-size: 14px;">
+        <i class="bi bi-arrow-left"></i> Back to Patients
+    </a>
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="d-flex align-items-center gap-4">
+            <div class="profile-avatar {{ 'male' if patient.gender in ('Male','male','M') else ('female' if patient.gender in ('Female','female','F') else 'unknown') }}">
+                {{ patient.child_name[0]|upper if patient.child_name else '?' }}
+            </div>
+            <div class="flex-grow-1">
+                <h3 class="mb-1">{{ patient.child_name }}</h3>
+                <div class="text-muted" style="font-size: 14px;">
+                    ID: {{ patient.child_id }} &middot; {{ patient.age_months }} months &middot; {{ patient.gender }}
+                </div>
+                {% if patient.father_name or patient.mother_name %}
+                <div class="text-muted mt-1" style="font-size: 13px;">
+                    {% if patient.father_name %}<i class="bi bi-person me-1"></i>Father: {{ patient.father_name }}{% endif %}
+                    {% if patient.father_name and patient.mother_name %} &middot; {% endif %}
+                    {% if patient.mother_name %}<i class="bi bi-person me-1"></i>Mother: {{ patient.mother_name }}{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('screening') }}" class="btn btn-primary btn-sm" style="border-radius: 6px;">
+                    <i class="bi bi-clipboard-plus me-1"></i>New Screening
+                </a>
+                {% if patient.screenings %}
+                <a href="{{ url_for('generate_pdf_report', record_id=patient.screenings[0].id) }}" class="btn btn-outline-secondary btn-sm" style="border-radius: 6px;" target="_blank">
+                    <i class="bi bi-file-pdf me-1"></i>Latest Report
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-item-label">Total Screenings</div>
+                <div class="info-item-value">{{ patient.total_screenings }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Latest Risk Level</div>
+                <div class="info-item-value">
+                    {% if patient.screenings %}
+                    <span class="risk-badge {{ patient.screenings[0].risk_level|lower }}">{{ patient.screenings[0].risk_level }}</span>
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Latest Probability</div>
+                <div class="info-item-value">{{ patient.screenings[0].probability if patient.screenings else 0 }}%</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Last Screened</div>
+                <div class="info-item-value" style="font-size: 13px;">{{ patient.screenings[0].date if patient.screenings else 'N/A' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Screening Timeline -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Screening History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for s in patient.screenings %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot {{ s.risk_level|lower }}"></div>
+                            <div class="timeline-card">
+                                <div class="timeline-date">
+                                    <i class="bi bi-calendar me-1"></i>{{ s.date }} {{ s.time }}
+                                    &middot; Screened by {{ s.screener }}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="risk-badge {{ s.risk_level|lower }} me-2">{{ s.risk_level }} Risk</span>
+                                        <span style="font-size: 14px; font-weight: 600;">{{ s.probability }}%</span>
+                                        <span style="font-size: 12px; color: var(--text-muted);"> ASD probability</span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('view_record', record_id=s.id) }}" class="btn btn-sm btn-outline-primary" style="font-size: 12px; border-radius: 5px;">
+                                            <i class="bi bi-eye me-1"></i>Details
+                                        </a>
+                                        <a href="{{ url_for('generate_pdf_report', record_id=s.id) }}" class="btn btn-sm btn-outline-secondary" style="font-size: 12px; border-radius: 5px;" target="_blank">
+                                            <i class="bi bi-file-text me-1"></i>Report
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mt-2" style="font-size: 13px; color: var(--text-muted);">
+                                    {{ s.recommendation }}
+                                </div>
+
+                                {% if s.followups %}
+                                <div class="mt-3 pt-3" style="border-top: 1px solid var(--border);">
+                                    {% for fu in s.followups %}
+                                    <div class="d-flex gap-2 mb-2" style="font-size: 13px;">
+                                        <i class="bi bi-chat-left-text text-info"></i>
+                                        <div>
+                                            <div>{{ fu.note }}</div>
+                                            <div class="text-muted" style="font-size: 11px;">{{ fu.added_by }} &middot; {{ fu.date }}</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Follow-up & Risk Trend -->
+        <div class="col-lg-4">
+            <!-- Add Follow-up -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-journal-plus me-2"></i>Add Follow-up Note</h6>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('add_followup', child_id=patient.child_id) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size: 13px;">Follow-up Date</label>
+                            <input type="date" class="form-control form-control-sm" name="followup_date" value="{{ now_date }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size: 13px;">Note</label>
+                            <textarea class="form-control form-control-sm" name="note" rows="3" placeholder="Add follow-up notes, referral details, observations..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100" style="border-radius: 6px;">
+                            <i class="bi bi-plus-lg me-1"></i>Add Follow-up
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Risk Trend Chart -->
+            {% if patient.total_screenings > 1 %}
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Risk Trend</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="riskTrendChart" height="200"></canvas>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if patient.total_screenings > 1 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const screenings = {{ patient.screenings|tojson }};
+    const labels = screenings.map(s => s.date).reverse();
+    const probs = screenings.map(s => s.probability).reverse();
+
+    new Chart(document.getElementById('riskTrendChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'ASD Probability (%)',
+                data: probs,
+                borderColor: '#1e3a5f',
+                backgroundColor: 'rgba(30,58,95,0.1)',
+                tension: 0.3,
+                fill: true,
+                borderWidth: 2,
+                pointBackgroundColor: probs.map(p => p >= 70 ? '#ef4444' : (p >= 40 ? '#f59e0b' : '#10b981')),
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

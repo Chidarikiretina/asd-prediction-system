@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs - ASD Screening System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="mb-1">Audit Logs</h2>
+        <p class="text-muted mb-0">System activity monitoring and accountability tracking</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Events (7 days)</h6>
+                            <h3 class="mb-0">{{ summary.total_events }}</h3>
+                        </div>
+                        <i class="fas fa-clipboard-list fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Failed Events</h6>
+                            <h3 class="mb-0">{{ summary.failed_events }}</h3>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Active Users</h6>
+                            <h3 class="mb-0">{{ summary.active_users }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-dark-50 mb-1">Failed Logins</h6>
+                            <h3 class="mb-0">{{ summary.failed_logins | length }}</h3>
+                        </div>
+                        <i class="fas fa-user-times fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters -->
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET">
+                        <div class="mb-3">
+                            <label for="action_type" class="form-label">Action Type</label>
+                            <select class="form-select form-select-sm" id="action_type" name="action_type">
+                                <option value="">All Actions</option>
+                                {% for action in action_types %}
+                                <option value="{{ action }}"
+                                        {% if current_filters.action_type == action %}selected{% endif %}>
+                                    {{ action | replace('_', ' ') | title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="success" class="form-label">Status</label>
+                            <select class="form-select form-select-sm" id="success" name="success">
+                                <option value="">All</option>
+                                <option value="true" {% if current_filters.success == 'true' %}selected{% endif %}>
+                                    Success Only
+                                </option>
+                                <option value="false" {% if current_filters.success == 'false' %}selected{% endif %}>
+                                    Failed Only
+                                </option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-search me-2"></i>Apply Filters
+                        </button>
+
+                        {% if current_filters.action_type or current_filters.success %}
+                        <a href="{{ url_for('admin_audit') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                            <i class="fas fa-times me-2"></i>Clear Filters
+                        </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Event Breakdown -->
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Event Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    {% for action, count in summary.events_by_action.items() %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small>{{ action | replace('_', ' ') | title }}</small>
+                        <span class="badge bg-secondary">{{ count }}</span>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No events recorded</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Failed Login Attempts -->
+            {% if summary.failed_logins %}
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Failed Login Attempts</h6>
+                </div>
+                <div class="card-body">
+                    {% for attempt in summary.failed_logins[:5] %}
+                    <div class="mb-2">
+                        <strong>{{ attempt.username }}</strong>
+                        <span class="badge bg-danger float-end">{{ attempt.count }}</span>
+                        <br>
+                        <small class="text-muted">Last: {{ attempt.last_attempt[:16] }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Audit Log Table -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Audit Log Entries</h5>
+                    <span class="badge bg-secondary">Page {{ page }}</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Resource</th>
+                                    <th>Status</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td class="small">
+                                        {{ log.timestamp[:19] if log.timestamp else 'N/A' }}
+                                    </td>
+                                    <td>
+                                        {% if log.username %}
+                                        <strong>{{ log.username }}</strong>
+                                        {% else %}
+                                        <span class="text-muted">System</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge
+                                            {% if 'login' in log.action_type %}bg-info
+                                            {% elif 'create' in log.action_type %}bg-success
+                                            {% elif 'update' in log.action_type or 'change' in log.action_type %}bg-warning text-dark
+                                            {% elif 'delete' in log.action_type or 'deactivate' in log.action_type %}bg-danger
+                                            {% elif 'view' in log.action_type %}bg-secondary
+                                            {% elif 'export' in log.action_type %}bg-primary
+                                            {% else %}bg-dark{% endif %}">
+                                            {{ log.action_type | replace('_', ' ') | title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if log.resource_type %}
+                                        {{ log.resource_type }}
+                                        {% if log.resource_id %}
+                                        <span class="text-muted">#{{ log.resource_id }}</span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.success %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% else %}
+                                        <span class="badge bg-danger" title="{{ log.error_message or 'Failed' }}">
+                                            Failed
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">
+                                        {{ log.ip_address or '-' }}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        No audit log entries found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-between">
+                    {% if page > 1 %}
+                    <a href="{{ url_for('admin_audit', page=page-1, **current_filters) }}"
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chevron-left me-1"></i>Previous
+                    </a>
+                    {% else %}
+                    <span></span>
+                    {% endif %}
+
+                    {% if logs | length >= 50 %}
+                    <a href="{{ url_for('admin_audit', page=page+1, **current_filters) }}"
+                       class="btn btn-outline-primary btn-sm">
+                        Next<i class="fas fa-chevron-right ms-1"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

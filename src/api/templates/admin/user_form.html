@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} User - ASD Screening System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-{% if action == 'Create' %}plus{% else %}edit{% endif %} me-2"></i>
+                        {{ action }} User
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                   value="{{ edit_user.username if edit_user else '' }}"
+                                   {% if edit_user %}readonly{% endif %}
+                                   pattern="[a-zA-Z0-9_]+"
+                                   required minlength="3">
+                            <div class="form-text">Letters, numbers, and underscores only. At least 3 characters.</div>
+                        </div>
+
+                        {% if not edit_user %}
+                        <!-- Password (only for new users) -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Initial Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password"
+                                       required minlength="8">
+                                <button type="button" class="btn btn-outline-secondary" id="togglePassword" title="Show/Hide Password">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="generatePassword" title="Auto-generate secure password">
+                                    <i class="fas fa-magic me-1"></i>Generate
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                At least 8 characters with uppercase, lowercase, number, and special character.
+                                User will be required to change this on first login.
+                            </div>
+                            <!-- Generated password display -->
+                            <div id="generatedPasswordAlert" class="alert alert-info mt-2 d-none">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Generated Password:</strong>
+                                        <code id="generatedPasswordDisplay" class="user-select-all"></code>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-info" id="copyPassword" title="Copy to clipboard">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-1">Save this password - it won't be shown again after form submission!</small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   value="{{ edit_user.name if edit_user else '' }}"
+                                   required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value="{{ edit_user.email if edit_user else '' }}">
+                        </div>
+
+                        <!-- Role -->
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.name }}"
+                                        {% if edit_user and edit_user.role_name == role.name %}selected{% endif %}>
+                                    {{ role.display_name }}
+                                    {% if role.description %} - {{ role.description }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Facility -->
+                        <div class="mb-3">
+                            <label for="facility" class="form-label">Facility <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="facility" name="facility"
+                                   value="{{ edit_user.facility if edit_user else '' }}"
+                                   required>
+                            <div class="form-text">Hospital, clinic, or health center name.</div>
+                        </div>
+
+                        <!-- Role Permissions Info -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Role Permissions</h6>
+                            <ul class="mb-0 small">
+                                <li><strong>Administrator:</strong> Full access to all features including user management and audit logs</li>
+                                <li><strong>Pediatrician:</strong> Create screenings, view all records, generate reports, export data</li>
+                                <li><strong>Nurse:</strong> Create screenings, view own records</li>
+                                <li><strong>Community Health Worker:</strong> Create screenings, view own records</li>
+                            </ul>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{{ action }} User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if not edit_user %}
+// Toggle password visibility
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+});
+
+// Generate secure password
+document.getElementById('generatePassword').addEventListener('click', function() {
+    // Generate password client-side that meets requirements
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const special = '!@#$%^&*()_+-=';
+    const allChars = uppercase + lowercase + digits + special;
+
+    // Ensure at least one of each required type
+    let password = '';
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += digits[Math.floor(Math.random() * digits.length)];
+    password += special[Math.floor(Math.random() * special.length)];
+
+    // Fill remaining 8 characters randomly
+    for (let i = 0; i < 8; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    // Shuffle the password
+    password = password.split('').sort(() => Math.random() - 0.5).join('');
+
+    // Set the password
+    const passwordInput = document.getElementById('password');
+    passwordInput.value = password;
+    passwordInput.type = 'text'; // Show generated password
+
+    // Update toggle icon
+    const toggleIcon = document.getElementById('toggleIcon');
+    toggleIcon.classList.remove('fa-eye');
+    toggleIcon.classList.add('fa-eye-slash');
+
+    // Show generated password alert
+    document.getElementById('generatedPasswordDisplay').textContent = password;
+    document.getElementById('generatedPasswordAlert').classList.remove('d-none');
+});
+
+// Copy password to clipboard
+document.getElementById('copyPassword').addEventListener('click', function() {
+    const password = document.getElementById('generatedPasswordDisplay').textContent;
+    navigator.clipboard.writeText(password).then(() => {
+        // Show feedback
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-outline-info');
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-info');
+        }, 2000);
+    });
+});
+{% endif %}
+</script>
+{% endblock %}

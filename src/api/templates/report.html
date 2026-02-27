@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening Report - {{ record.id }} | ASD Early Screening System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --accent: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: white;
+            color: var(--text-dark);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .report-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        /* Header */
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 32px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .report-meta {
+            text-align: right;
+        }
+
+        .report-meta h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .report-meta p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .report-id {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--bg-light);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* Title Section */
+        .report-title {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .report-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .report-title p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Patient Info */
+        .patient-section {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .patient-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .patient-id {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        .patient-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .patient-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .patient-item span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Result Section */
+        .result-section {
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .result-section.high {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .result-section.medium {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .result-section.low {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .result-badge.high {
+            background: var(--danger);
+        }
+
+        .result-badge.medium {
+            background: var(--warning);
+        }
+
+        .result-badge.low {
+            background: var(--success);
+        }
+
+        .probability-box {
+            text-align: center;
+            padding: 12px 24px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .probability-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .probability-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .recommendation-box {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .recommendation-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-text {
+            font-size: 14px;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Scores Section */
+        .scores-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .score-card {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Observations */
+        .observations-section {
+            margin-bottom: 24px;
+        }
+
+        .observations-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .observation-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .observation-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .observation-icon.concern {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .observation-icon.normal {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        /* Footer */
+        .report-footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .footer-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .footer-item span {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .disclaimer {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .disclaimer-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--warning);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .disclaimer-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .copyright {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .report-container {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Print Button */
+        .print-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+        }
+
+        .print-button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            .print-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Header -->
+        <header class="report-header">
+            <div class="logo-section">
+                <img src="{{ url_for('static', filename='img/mohcc_logo.png') }}" alt="MoHCC" style="width: 44px; height: 44px; object-fit: contain;">
+                <div class="logo-text">
+                    <h1>ASD Early Screening System</h1>
+                    <p>Ministry of Health and Child Care - Zimbabwe</p>
+                </div>
+            </div>
+            <div class="report-meta">
+                <h2>Screening Report</h2>
+                <p>Generated: {{ record.date }} {{ record.time }}</p>
+                <div class="report-id">{{ record.id }}</div>
+            </div>
+        </header>
+
+        <!-- Title -->
+        <div class="report-title">
+            <h2>Autism Spectrum Disorder Screening Report</h2>
+            <p>Developmental Screening for Children Aged 18-36 Months</p>
+        </div>
+
+        <!-- Patient Info -->
+        <section class="patient-section">
+            <div class="patient-header">
+                <span class="patient-name">{{ record.child_name }}</span>
+                <span class="patient-id">Patient ID: {{ record.child_id }}</span>
+            </div>
+            <div class="patient-grid">
+                <div class="patient-item">
+                    <label>Age</label>
+                    <span>{{ record.age_months }} months</span>
+                </div>
+                <div class="patient-item">
+                    <label>Gender</label>
+                    <span>{{ record.gender }}</span>
+                </div>
+                <div class="patient-item">
+                    <label>Screening Date</label>
+                    <span>{{ record.date }}</span>
+                </div>
+                <div class="patient-item">
+                    <label>Facility</label>
+                    <span>{{ record.facility }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Result -->
+        <section class="result-section {{ record.risk_level|lower }}">
+            <div class="result-header">
+                <span class="result-badge {{ record.risk_level|lower }}">
+                    {% if record.risk_level == 'High' %}
+                    ⚠ HIGH RISK
+                    {% elif record.risk_level == 'Medium' %}
+                    ⚡ MEDIUM RISK
+                    {% else %}
+                    ✓ LOW RISK
+                    {% endif %}
+                </span>
+                <div class="probability-box">
+                    <div class="probability-value">{{ record.probability }}%</div>
+                    <div class="probability-label">ASD Probability Score</div>
+                </div>
+            </div>
+            <div class="recommendation-box">
+                <div class="recommendation-title">Clinical Recommendation</div>
+                <p class="recommendation-text">{{ record.recommendation }}</p>
+            </div>
+        </section>
+
+        <!-- Screening Scores -->
+        <section class="scores-section">
+            <h3 class="section-title">Screening Assessment Scores</h3>
+            <div class="scores-grid">
+                <div class="score-card">
+                    <div class="score-value">{{ record.input_data.mchat_score | default('N/A') }}</div>
+                    <div class="score-label">M-CHAT Score</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-value">{{ record.input_data.social_communication_score | default('N/A') }}</div>
+                    <div class="score-label">Social Communication</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-value">{{ record.input_data.rrb_score | default('N/A') }}</div>
+                    <div class="score-label">RRB Score</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-value">{{ record.input_data.word_count | default('N/A') }}</div>
+                    <div class="score-label">Word Count</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Behavioral Observations -->
+        <section class="observations-section">
+            <h3 class="section-title">Behavioral Observations</h3>
+            <div class="observations-grid">
+                {% set behaviors = [
+                    ('eye_contact', 'Eye Contact'),
+                    ('response_to_name', 'Response to Name'),
+                    ('pointing', 'Pointing'),
+                    ('social_smile', 'Social Smile'),
+                    ('joint_attention', 'Joint Attention'),
+                    ('pretend_play', 'Pretend Play'),
+                    ('repetitive_behaviors', 'Repetitive Behaviors'),
+                    ('hand_flapping', 'Hand Flapping'),
+                    ('toe_walking', 'Toe Walking'),
+                    ('lines_up_toys', 'Lines Up Toys'),
+                    ('unusual_interests', 'Unusual Interests'),
+                    ('upset_by_change', 'Upset by Change'),
+                    ('two_word_phrases', 'Two-Word Phrases'),
+                    ('echolalia', 'Echolalia'),
+                    ('language_regression', 'Language Regression'),
+                    ('sensory_sensitivity', 'Sensory Sensitivity')
+                ] %}
+                {% for key, label in behaviors %}
+                {% set value = record.input_data.get(key, '0') %}
+                <div class="observation-item">
+                    <div class="observation-icon {{ 'concern' if value == '1' else 'normal' }}">
+                        {{ '!' if value == '1' else '✓' }}
+                    </div>
+                    <span>{{ label }}: {{ 'Concern' if value == '1' else 'Normal' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="report-footer">
+            <div class="footer-grid">
+                <div class="footer-item">
+                    <label>Screened By</label>
+                    <span>{{ record.screener }}</span>
+                </div>
+                <div class="footer-item">
+                    <label>Healthcare Facility</label>
+                    <span>{{ record.facility }}</span>
+                </div>
+                <div class="footer-item">
+                    <label>Record Status</label>
+                    <span>{{ record.status }}</span>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <div class="disclaimer-title">Important Disclaimer</div>
+                <p class="disclaimer-text">
+                    This screening report is generated by an automated system and is intended to assist healthcare professionals
+                    in the early identification of potential developmental concerns. This is NOT a diagnostic tool. Results should
+                    be interpreted by qualified healthcare professionals and should be considered alongside comprehensive clinical
+                    evaluation. A positive screening result indicates a need for further assessment, not a confirmed diagnosis of
+                    Autism Spectrum Disorder.
+                </p>
+            </div>
+
+            <p class="copyright">
+                ASD Early Screening System v1.0 | Ministry of Health and Child Care - Zimbabwe | &copy; 2026 All Rights Reserved
+            </p>
+        </footer>
+    </div>
+
+    <button class="print-button no-print" onclick="window.print()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+        </svg>
+        Print Report
+    </button>
+</body>
+</html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Details - ASD Early Screening System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --accent: #0ea5e9;
+            --accent-light: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .navbar-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 16px !important;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+            background: var(--bg-light);
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown:hover {
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 32px 0;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Record Header */
+        .record-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .record-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .record-id-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .record-id-badge code {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .record-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-action-primary {
+            color: white;
+            background: var(--primary);
+            border: none;
+        }
+
+        .btn-action-primary:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .btn-action-outline {
+            color: var(--text-dark);
+            background: white;
+            border: 1px solid var(--border);
+        }
+
+        .btn-action-outline:hover {
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .child-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .child-avatar-large {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 28px;
+        }
+
+        .child-details h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0 0 4px 0;
+        }
+
+        .child-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .child-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Risk Result Card */
+        .risk-result-card {
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .risk-result-card.high {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .risk-result-card.medium {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .risk-result-card.low {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .risk-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .risk-badge-large {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .risk-badge-large.high {
+            background: var(--danger);
+            color: white;
+        }
+
+        .risk-badge-large.medium {
+            background: var(--warning);
+            color: white;
+        }
+
+        .risk-badge-large.low {
+            background: var(--success);
+            color: white;
+        }
+
+        .probability-display {
+            text-align: right;
+        }
+
+        .probability-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .probability-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .recommendation-box {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .recommendation-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-text {
+            font-size: 14px;
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Info Cards Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .info-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card-title i {
+            color: var(--accent);
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .info-value.concern {
+            color: var(--danger);
+        }
+
+        .info-value.normal {
+            color: var(--success);
+        }
+
+        /* Behavioral Observations Grid */
+        .behavioral-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .behavioral-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .behavioral-item i {
+            font-size: 14px;
+        }
+
+        .behavioral-item.concern i {
+            color: var(--danger);
+        }
+
+        .behavioral-item.normal i {
+            color: var(--success);
+        }
+
+        /* Screening Info */
+        .screening-meta {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .screening-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-item-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            color: var(--accent);
+        }
+
+        .meta-item-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .meta-item-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        @media (max-width: 992px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .behavioral-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .screening-meta-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .behavioral-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .record-header-top {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .record-actions {
+                width: 100%;
+            }
+
+            .btn-action {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                    <img src="{{ url_for('static', filename='img/mohcc_logo.png') }}" alt="MoHCC" style="width: 34px; height: 34px; object-fit: contain; border-radius: 4px;">
+                    <span>ASD Screening</span>
+                </a>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">
+                        <i class="bi bi-grid me-1"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('screening') }}" class="nav-link">
+                        <i class="bi bi-clipboard-plus me-1"></i> New Screening
+                    </a>
+                    <a href="{{ url_for('history') }}" class="nav-link">
+                        <i class="bi bi-clock-history me-1"></i> History
+                    </a>
+                    <a href="{{ url_for('patients') }}" class="nav-link">
+                        <i class="bi bi-people me-1"></i> Patients
+                    </a>
+                    <a href="{{ url_for('about') }}" class="nav-link">
+                        <i class="bi bi-info-circle me-1"></i> About
+                    </a>
+                </div>
+
+                <!-- Language Selector -->
+                <div class="dropdown me-2">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size: 13px; padding: 6px 12px; border-radius: 6px;">
+                        <i class="bi bi-globe me-1"></i>
+                        {{ current_lang|upper if current_lang else 'EN' }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% for lang in available_languages %}
+                        <li><a class="dropdown-item {% if current_lang == lang.code %}active{% endif %}" href="{{ url_for('set_language', lang=lang.code) }}">{{ lang.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <div class="user-dropdown" data-bs-toggle="dropdown">
+                        <div class="user-avatar">{{ user[0] }}</div>
+                        <span class="d-none d-md-inline" style="font-size: 14px; color: var(--text-dark);">{{ user }}</span>
+                        <i class="bi bi-chevron-down" style="font-size: 12px; color: var(--text-muted);"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>{{ t.logout if t else 'Logout' }}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Back Link -->
+            <a href="{{ url_for('history') }}" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to History
+            </a>
+
+            <!-- Record Header -->
+            <div class="record-header">
+                <div class="record-header-top">
+                    <div class="record-id-badge">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Record ID: <code>{{ record.id }}</code>
+                    </div>
+                    <div class="record-actions">
+                        <a href="{{ url_for('generate_pdf_report', record_id=record.id) }}" class="btn-action btn-action-primary" target="_blank">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            Print Report
+                        </a>
+                        <a href="{{ url_for('generate_report', record_id=record.id) }}" class="btn-action btn-action-outline" target="_blank">
+                            <i class="bi bi-file-text"></i>
+                            Simple Report
+                        </a>
+                        <a href="{{ url_for('patient_detail', child_id=record.child_id) }}" class="btn-action btn-action-outline">
+                            <i class="bi bi-person"></i>
+                            Patient Profile
+                        </a>
+                    </div>
+                </div>
+
+                <div class="child-header">
+                    <div class="child-avatar-large">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="child-details">
+                        <h1>{{ record.child_name }}</h1>
+                        <div class="child-meta">
+                            <span><i class="bi bi-hash"></i> {{ record.child_id }}</span>
+                            <span><i class="bi bi-calendar"></i> {{ record.age_months }} months old</span>
+                            <span><i class="bi bi-gender-ambiguous"></i> {{ record.gender }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Result Card -->
+            <div class="risk-result-card {{ record.risk_level|lower }}">
+                <div class="risk-result-header">
+                    <span class="risk-badge-large {{ record.risk_level|lower }}">
+                        <i class="bi bi-{{ 'exclamation-triangle' if record.risk_level == 'High' else ('exclamation-circle' if record.risk_level == 'Medium' else 'check-circle') }}"></i>
+                        {{ record.risk_level }} Risk
+                    </span>
+                    <div class="probability-display">
+                        <div class="probability-value">{{ record.probability }}%</div>
+                        <div class="probability-label">ASD Probability</div>
+                    </div>
+                </div>
+                <div class="recommendation-box">
+                    <div class="recommendation-title">Clinical Recommendation</div>
+                    <p class="recommendation-text">{{ record.recommendation }}</p>
+                </div>
+            </div>
+
+            <!-- Info Cards Grid -->
+            <div class="info-grid">
+                <!-- M-CHAT-R Screening Scores -->
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <i class="bi bi-clipboard-data"></i>
+                        M-CHAT-R/F Screening Results
+                    </h3>
+                    <ul class="info-list">
+                        <li>
+                            <span class="info-label">M-CHAT-R Total Score (0-20)</span>
+                            {% set mchat_score = record.input_data.mchat_score | default(0) | int %}
+                            <span class="info-value {{ 'concern' if mchat_score >= 3 else 'normal' }}">
+                                {{ mchat_score }}
+                                {% if mchat_score >= 8 %}
+                                    <small>(High Risk)</small>
+                                {% elif mchat_score >= 3 %}
+                                    <small>(Medium Risk)</small>
+                                {% else %}
+                                    <small>(Low Risk)</small>
+                                {% endif %}
+                            </span>
+                        </li>
+                        <li>
+                            <span class="info-label">Word Count</span>
+                            <span class="info-value">{{ record.input_data.word_count | default('N/A') }}</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Language Regression</span>
+                            <span class="info-value {{ 'concern' if record.input_data.language_regression == '1' else 'normal' }}">
+                                {{ 'Yes - Concern' if record.input_data.language_regression == '1' else 'No' }}
+                            </span>
+                        </li>
+                        <li>
+                            <span class="info-label">Family History of ASD</span>
+                            <span class="info-value {{ 'concern' if record.input_data.family_history_asd == '1' else 'normal' }}">
+                                {{ 'Yes' if record.input_data.family_history_asd == '1' else 'No' }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Demographics -->
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <i class="bi bi-person-vcard"></i>
+                        Child & Family Information
+                    </h3>
+                    <ul class="info-list">
+                        <li>
+                            <span class="info-label">Age</span>
+                            <span class="info-value">{{ record.age_months }} months</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Gender</span>
+                            <span class="info-value">{{ record.gender }}</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Father's Name</span>
+                            <span class="info-value">{{ record.input_data.father_name | default('Not provided') }}</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Mother's Name</span>
+                            <span class="info-value">{{ record.input_data.mother_name | default('Not provided') }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- M-CHAT-R/F Question Responses -->
+            <div class="info-card" style="margin-bottom: 24px;">
+                <h3 class="info-card-title">
+                    <i class="bi bi-clipboard-check"></i>
+                    M-CHAT-R/F Responses (20 Questions)
+                </h3>
+                <div class="behavioral-grid">
+                    {% set mchat_questions = [
+                        ('mchat_q1', 'Q1: Follows pointing'),
+                        ('mchat_q2', 'Q2: Hearing concerns'),
+                        ('mchat_q3', 'Q3: Pretend play'),
+                        ('mchat_q4', 'Q4: Likes climbing'),
+                        ('mchat_q5', 'Q5: Unusual finger movements'),
+                        ('mchat_q6', 'Q6: Points to ask'),
+                        ('mchat_q7', 'Q7: Points to show'),
+                        ('mchat_q8', 'Q8: Interest in children'),
+                        ('mchat_q9', 'Q9: Shows things to you'),
+                        ('mchat_q10', 'Q10: Responds to name'),
+                        ('mchat_q11', 'Q11: Smiles back'),
+                        ('mchat_q12', 'Q12: Upset by sounds'),
+                        ('mchat_q13', 'Q13: Walking'),
+                        ('mchat_q14', 'Q14: Eye contact'),
+                        ('mchat_q15', 'Q15: Copies actions'),
+                        ('mchat_q16', 'Q16: Follows your gaze'),
+                        ('mchat_q17', 'Q17: Gets your attention'),
+                        ('mchat_q18', 'Q18: Understands commands'),
+                        ('mchat_q19', 'Q19: Checks your reaction'),
+                        ('mchat_q20', 'Q20: Likes movement')
+                    ] %}
+                    {% for key, label in mchat_questions %}
+                    {% set value = record.input_data.get(key, '0') %}
+                    <div class="behavioral-item {{ 'concern' if value == '1' else 'normal' }}">
+                        <i class="bi bi-{{ 'exclamation-circle-fill' if value == '1' else 'check-circle-fill' }}"></i>
+                        <span>{{ label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-3 p-3 bg-light rounded" style="font-size: 12px; color: var(--text-muted);">
+                    <strong>Scoring Note:</strong> For questions 2, 5, and 12, "Yes" indicates concern. For all other questions, "No" indicates concern.
+                    A score of 0-2 is Low Risk, 3-7 is Medium Risk, 8-20 is High Risk.
+                </div>
+            </div>
+
+            <!-- Screening Metadata -->
+            <div class="screening-meta">
+                <div class="screening-meta-grid">
+                    <div class="meta-item">
+                        <div class="meta-item-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div class="meta-item-label">Screened By</div>
+                        <div class="meta-item-value">{{ record.screener }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-item-icon">
+                            <i class="bi bi-hospital"></i>
+                        </div>
+                        <div class="meta-item-label">Facility</div>
+                        <div class="meta-item-value">{{ record.facility }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-item-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div class="meta-item-label">Date</div>
+                        <div class="meta-item-value">{{ record.date }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-item-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <div class="meta-item-label">Time</div>
+                        <div class="meta-item-value">{{ record.time }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

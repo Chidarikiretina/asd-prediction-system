@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening Report - {{ record.child_name }} - {{ record.id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @page { margin: 20mm; size: A4; }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+        }
+
+        * { font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f1f5f9; color: #1f2937; font-size: 13px; line-height: 1.5; }
+
+        .report-container { max-width: 800px; margin: 20px auto; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+
+        /* Header */
+        .report-header { background: linear-gradient(135deg, #1e3a5f, #2d5a87); color: white; padding: 28px 36px; display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .header-logo { width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .header-title { font-size: 18px; font-weight: 700; }
+        .header-subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+        .header-right { text-align: right; font-size: 11px; opacity: 0.85; }
+
+        /* Risk Banner */
+        .risk-banner { padding: 20px 36px; display: flex; justify-content: space-between; align-items: center; }
+        .risk-banner.high { background: linear-gradient(135deg, #fef2f2, #fee2e2); border-bottom: 3px solid #ef4444; }
+        .risk-banner.medium { background: linear-gradient(135deg, #fffbeb, #fef3c7); border-bottom: 3px solid #f59e0b; }
+        .risk-banner.low { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-bottom: 3px solid #10b981; }
+        .risk-level { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .risk-level.high { color: #dc2626; }
+        .risk-level.medium { color: #d97706; }
+        .risk-level.low { color: #059669; }
+        .risk-dot { width: 14px; height: 14px; border-radius: 50%; }
+        .risk-dot.high { background: #ef4444; }
+        .risk-dot.medium { background: #f59e0b; }
+        .risk-dot.low { background: #10b981; }
+        .probability-box { text-align: right; }
+        .probability-value { font-size: 32px; font-weight: 700; color: #1f2937; }
+        .probability-label { font-size: 11px; color: #6b7280; }
+
+        /* Content */
+        .report-body { padding: 28px 36px; }
+        .section { margin-bottom: 24px; }
+        .section-title { font-size: 14px; font-weight: 600; color: #1e3a5f; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+        .section-title::before { content: ''; width: 4px; height: 16px; background: #0ea5e9; border-radius: 2px; }
+
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .info-table td:first-child { color: #6b7280; width: 40%; font-weight: 500; }
+        .info-table td:last-child { color: #1f2937; font-weight: 500; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        /* MCHAT Grid */
+        .mchat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .mchat-item { padding: 8px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+        .mchat-item.concern { background: #fef2f2; color: #991b1b; }
+        .mchat-item.normal { background: #f0fdf4; color: #166534; }
+        .mchat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .mchat-dot.concern { background: #ef4444; }
+        .mchat-dot.normal { background: #10b981; }
+
+        /* Recommendation */
+        .recommendation-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-top: 8px; }
+        .recommendation-text { font-size: 13px; color: #1f2937; line-height: 1.6; }
+
+        /* Footer */
+        .report-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 36px; display: flex; justify-content: space-between; font-size: 10px; color: #9ca3af; }
+
+        /* Print button */
+        .print-bar { max-width: 800px; margin: 0 auto 10px; display: flex; gap: 10px; justify-content: flex-end; }
+        .print-bar button, .print-bar a { padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-print { background: #1e3a5f; color: white; border: none; }
+        .btn-print:hover { background: #2d5a87; }
+        .btn-back { background: white; color: #1f2937; border: 1px solid #e2e8f0; }
+        .btn-back:hover { background: #f8fafc; }
+
+        /* Watermark for confidentiality */
+        .confidential { text-align: center; font-size: 10px; color: #ef4444; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; padding: 8px; border: 1px dashed #fca5a5; border-radius: 4px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <!-- Print Actions Bar -->
+    <div class="print-bar no-print" style="padding-top: 20px;">
+        <a href="javascript:history.back()" class="btn-back">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+            Back
+        </a>
+        <button class="btn-print" onclick="window.print()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 10a1 1 0 0 1-1-1v-2h8v2a1 1 0 0 1-1 1H5z"/></svg>
+            Print Report
+        </button>
+    </div>
+
+    <div class="report-container">
+        <!-- Header -->
+        <div class="report-header">
+            <div class="header-left">
+                <img src="{{ url_for('static', filename='img/mohcc_logo.png') }}" alt="MoHCC" style="width: 52px; height: 52px; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.9); padding: 3px;">
+                <div>
+                    <div class="header-title">ASD Screening Report</div>
+                    <div class="header-subtitle">Ministry of Health and Child Care - Zimbabwe</div>
+                </div>
+            </div>
+            <div class="header-right">
+                Record ID: <strong>{{ record.id }}</strong><br>
+                Date: {{ record.date }}<br>
+                Time: {{ record.time }}
+            </div>
+        </div>
+
+        <!-- Risk Banner -->
+        <div class="risk-banner {{ record.risk_level|lower }}">
+            <div class="risk-level {{ record.risk_level|lower }}">
+                <div class="risk-dot {{ record.risk_level|lower }}"></div>
+                {{ record.risk_level }} Risk
+            </div>
+            <div class="probability-box">
+                <div class="probability-value">{{ record.probability }}%</div>
+                <div class="probability-label">ASD Probability Score</div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="report-body">
+            <div class="confidential">Confidential Medical Document - Handle According to Data Protection Policy</div>
+
+            <!-- Child & Screening Info -->
+            <div class="two-col section">
+                <div>
+                    <div class="section-title">Child Information</div>
+                    <table class="info-table">
+                        <tr><td>Full Name</td><td>{{ record.child_name }}</td></tr>
+                        <tr><td>Child ID</td><td>{{ record.child_id }}</td></tr>
+                        <tr><td>Age</td><td>{{ record.age_months }} months</td></tr>
+                        <tr><td>Gender</td><td>{{ record.gender }}</td></tr>
+                        <tr><td>Father's Name</td><td>{{ record.input_data.father_name | default('Not provided') }}</td></tr>
+                        <tr><td>Mother's Name</td><td>{{ record.input_data.mother_name | default('Not provided') }}</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <div class="section-title">Screening Details</div>
+                    <table class="info-table">
+                        <tr><td>Record ID</td><td>{{ record.id }}</td></tr>
+                        <tr><td>Date</td><td>{{ record.date }}</td></tr>
+                        <tr><td>Time</td><td>{{ record.time }}</td></tr>
+                        <tr><td>Screener</td><td>{{ record.screener }}</td></tr>
+                        <tr><td>Facility</td><td>{{ record.facility }}</td></tr>
+                        <tr><td>Status</td><td>{{ record.status }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Clinical Scores -->
+            <div class="section">
+                <div class="section-title">Clinical Assessment Scores</div>
+                <div class="two-col">
+                    <table class="info-table">
+                        {% set mchat_score = record.input_data.mchat_score | default(0) | int %}
+                        <tr><td>M-CHAT-R Total Score</td><td><strong>{{ mchat_score }}/20</strong>
+                            {% if mchat_score >= 8 %}(High Risk){% elif mchat_score >= 3 %}(Medium Risk){% else %}(Low Risk){% endif %}
+                        </td></tr>
+                        <tr><td>ML Prediction Score</td><td><strong>{{ record.probability }}%</strong></td></tr>
+                        <tr><td>Word Count</td><td>{{ record.input_data.word_count | default('N/A') }}</td></tr>
+                    </table>
+                    <table class="info-table">
+                        <tr><td>Language Regression</td><td>{{ 'Yes' if record.input_data.language_regression == '1' else 'No' }}</td></tr>
+                        <tr><td>Family History ASD</td><td>{{ 'Yes' if record.input_data.family_history_asd == '1' else 'No' }}</td></tr>
+                        <tr><td>Gestational Weeks</td><td>{{ record.input_data.gestational_weeks | default('N/A') }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- M-CHAT-R Responses -->
+            <div class="section">
+                <div class="section-title">M-CHAT-R/F Question Responses</div>
+                <div class="mchat-grid">
+                    {% set questions = [
+                        ('mchat_q1', 'Q1: Follows pointing'),
+                        ('mchat_q2', 'Q2: Hearing concerns'),
+                        ('mchat_q3', 'Q3: Pretend play'),
+                        ('mchat_q4', 'Q4: Likes climbing'),
+                        ('mchat_q5', 'Q5: Finger movements'),
+                        ('mchat_q6', 'Q6: Points to ask'),
+                        ('mchat_q7', 'Q7: Points to show'),
+                        ('mchat_q8', 'Q8: Interest in children'),
+                        ('mchat_q9', 'Q9: Shows things'),
+                        ('mchat_q10', 'Q10: Responds to name'),
+                        ('mchat_q11', 'Q11: Smiles back'),
+                        ('mchat_q12', 'Q12: Upset by sounds'),
+                        ('mchat_q13', 'Q13: Walking'),
+                        ('mchat_q14', 'Q14: Eye contact'),
+                        ('mchat_q15', 'Q15: Copies actions'),
+                        ('mchat_q16', 'Q16: Follows gaze'),
+                        ('mchat_q17', 'Q17: Gets attention'),
+                        ('mchat_q18', 'Q18: Understands'),
+                        ('mchat_q19', 'Q19: Checks reaction'),
+                        ('mchat_q20', 'Q20: Likes movement')
+                    ] %}
+                    {% for key, label in questions %}
+                    {% set val = record.input_data.get(key, '0') %}
+                    <div class="mchat-item {{ 'concern' if val == '1' else 'normal' }}">
+                        <div class="mchat-dot {{ 'concern' if val == '1' else 'normal' }}"></div>
+                        {{ label }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recommendation -->
+            <div class="section">
+                <div class="section-title">Clinical Recommendation</div>
+                <div class="recommendation-box">
+                    <div class="recommendation-text">{{ record.recommendation }}</div>
+                </div>
+                {% if record.risk_level == 'High' %}
+                <div class="recommendation-box" style="border-color: #fca5a5; background: #fef2f2; margin-top: 10px;">
+                    <div class="recommendation-text" style="color: #991b1b;">
+                        <strong>URGENT ACTION REQUIRED:</strong> This child has been identified as HIGH RISK for Autism Spectrum Disorder.
+                        Immediate referral to a developmental pediatrician or child psychologist is strongly recommended.
+                        A comprehensive diagnostic evaluation should be scheduled as soon as possible.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Signature Area -->
+            <div class="section" style="margin-top: 36px;">
+                <div class="two-col">
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                        <div style="font-size: 12px; color: #6b7280;">Screener's Signature</div>
+                        <div style="font-size: 13px; font-weight: 500; margin-top: 4px;">{{ record.screener }}</div>
+                    </div>
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                        <div style="font-size: 12px; color: #6b7280;">Reviewing Physician's Signature</div>
+                        <div style="font-size: 13px; color: #9ca3af; margin-top: 4px;">________________</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="report-footer">
+            <div><img src="{{ url_for('static', filename='img/mohcc_logo.png') }}" alt="" style="width: 16px; height: 16px; object-fit: contain; vertical-align: middle; margin-right: 4px;">ASD Early Screening System v1.0 | Ministry of Health and Child Care - Zimbabwe</div>
+            <div>Generated: {{ now_date if now_date else '' }} | This report is for medical use only</div>
+        </div>
+    </div>
+</body>
+</html>

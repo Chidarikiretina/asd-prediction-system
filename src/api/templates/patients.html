@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Patients - ASD Screening System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .patient-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
+    .patient-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .patient-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; color: white; }
+    .patient-avatar.male { background: #0ea5e9; }
+    .patient-avatar.female { background: #ec4899; }
+    .patient-avatar.unknown { background: #a78bfa; }
+    .risk-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .risk-badge.high { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .risk-badge.medium { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .risk-badge.low { background: rgba(16,185,129,0.1); color: #10b981; }
+    .search-box { position: relative; }
+    .search-box input { padding-left: 40px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .stat-mini { text-align: center; padding: 16px; background: white; border-radius: 10px; border: 1px solid var(--border); }
+    .stat-mini-value { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+    .stat-mini-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .empty-state { text-align: center; padding: 64px 24px; color: var(--text-muted); }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Patient Management</h4>
+            <p class="text-muted mb-0">View all screened children and their screening history</p>
+        </div>
+        <a href="{{ url_for('screening') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>New Screening
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-value">{{ patients|length }}</div>
+                <div class="stat-mini-label">Total Patients</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-value" style="color: #ef4444;">{{ patients|selectattr('latest_risk', 'equalto', 'High')|list|length }}</div>
+                <div class="stat-mini-label">High Risk</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-value" style="color: #f59e0b;">{{ patients|selectattr('latest_risk', 'equalto', 'Medium')|list|length }}</div>
+                <div class="stat-mini-label">Medium Risk</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-mini">
+                <div class="stat-mini-value" style="color: #10b981;">{{ patients|selectattr('latest_risk', 'equalto', 'Low')|list|length }}</div>
+                <div class="stat-mini-label">Low Risk</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-5">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="patientSearch" placeholder="Search by name or ID...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="riskFilter" style="border-radius: 8px; font-size: 14px;">
+                        <option value="">All Risk Levels</option>
+                        <option value="high">High Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="low">Low Risk</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="genderFilter" style="border-radius: 8px; font-size: 14px;">
+                        <option value="">All Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="col-md-2 text-end">
+                    <span class="text-muted" style="font-size: 13px;" id="resultCount">{{ patients|length }} patients</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient List -->
+    {% if patients %}
+    <div class="row g-3" id="patientList">
+        {% for p in patients %}
+        <div class="col-md-6 col-lg-4 patient-item"
+             data-name="{{ p.child_name|lower }}"
+             data-id="{{ p.child_id|lower }}"
+             data-risk="{{ p.latest_risk|lower }}"
+             data-gender="{{ p.gender|lower }}">
+            <div class="patient-card">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="patient-avatar {{ 'male' if p.gender in ('Male','male','M') else ('female' if p.gender in ('Female','female','F') else 'unknown') }}">
+                        {{ p.child_name[0]|upper if p.child_name else '?' }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">{{ p.child_name }}</div>
+                        <div class="text-muted" style="font-size: 12px;">ID: {{ p.child_id }} &middot; {{ p.age_months }}m &middot; {{ p.gender }}</div>
+                    </div>
+                    <span class="risk-badge {{ p.latest_risk|lower }}">{{ p.latest_risk }}</span>
+                </div>
+
+                <div class="row g-2 mb-3" style="font-size: 12px; color: var(--text-muted);">
+                    <div class="col-6"><i class="bi bi-clipboard-data me-1"></i>{{ p.total_screenings }} screening{{ 's' if p.total_screenings > 1 else '' }}</div>
+                    <div class="col-6"><i class="bi bi-graph-up me-1"></i>{{ p.latest_probability }}% risk</div>
+                    <div class="col-6"><i class="bi bi-calendar me-1"></i>{{ p.latest_date }}</div>
+                    <div class="col-6">
+                        {% if p.status == 'Pending Review' %}
+                        <span style="color: #f59e0b;"><i class="bi bi-clock me-1"></i>Pending</span>
+                        {% else %}
+                        <span style="color: #10b981;"><i class="bi bi-check-circle me-1"></i>Completed</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a href="{{ url_for('patient_detail', child_id=p.child_id) }}" class="btn btn-sm btn-outline-primary w-100" style="border-radius: 6px; font-size: 13px;">
+                    <i class="bi bi-eye me-1"></i>View Profile
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-people"></i>
+        <h5>No patients found</h5>
+        <p>Start screening children to build your patient list.</p>
+        <a href="{{ url_for('screening') }}" class="btn btn-primary mt-2"><i class="bi bi-plus-lg me-2"></i>New Screening</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterPatients() {
+    const search = document.getElementById('patientSearch').value.toLowerCase();
+    const risk = document.getElementById('riskFilter').value;
+    const gender = document.getElementById('genderFilter').value;
+    let count = 0;
+
+    document.querySelectorAll('.patient-item').forEach(item => {
+        const name = item.dataset.name;
+        const id = item.dataset.id;
+        const itemRisk = item.dataset.risk;
+        const itemGender = item.dataset.gender;
+
+        let show = true;
+        if (search && !name.includes(search) && !id.includes(search)) show = false;
+        if (risk && itemRisk !== risk) show = false;
+        if (gender && !itemGender.includes(gender)) show = false;
+
+        item.style.display = show ? '' : 'none';
+        if (show) count++;
+    });
+
+    document.getElementById('resultCount').textContent = count + ' patient' + (count !== 1 ? 's' : '');
+}
+
+document.getElementById('patientSearch').addEventListener('input', filterPatients);
+document.getElementById('riskFilter').addEventListener('change', filterPatients);
+document.getElementById('genderFilter').addEventListener('change', filterPatients);
+</script>
+{% endblock %}

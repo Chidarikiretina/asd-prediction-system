@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Active Sessions & Login Activity{% endblock %}
+
+{% block extra_css %}
+<style>
+    .session-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px; transition: box-shadow 0.2s; }
+    .session-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .session-card.current { border-left: 3px solid #10b981; }
+    .device-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-dot.active { background: #10b981; }
+    .status-dot.inactive { background: #9ca3af; }
+    .activity-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .activity-icon.success { background: #d1fae5; color: #059669; }
+    .activity-icon.failed { background: #fee2e2; color: #dc2626; }
+    .activity-icon.logout { background: #e0e7ff; color: #4f46e5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Active Sessions & Login Activity</h4>
+            <p class="text-muted mb-0">Monitor user sessions and login activity in real-time</p>
+        </div>
+        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Users
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div style="font-size: 28px; font-weight: 700; color: #10b981;">{{ active_sessions|length }}</div>
+                    <div class="text-muted" style="font-size: 12px;">Active Sessions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div style="font-size: 28px; font-weight: 700; color: #0ea5e9;">{{ login_activity|selectattr('action_type', 'equalto', 'LOGIN_SUCCESS')|list|length }}</div>
+                    <div class="text-muted" style="font-size: 12px;">Logins (24h)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div style="font-size: 28px; font-weight: 700; color: #ef4444;">{{ login_activity|selectattr('action_type', 'equalto', 'LOGIN_FAILED')|list|length }}</div>
+                    <div class="text-muted" style="font-size: 12px;">Failed Logins (24h)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div style="font-size: 28px; font-weight: 700; color: #6366f1;">{{ login_activity|selectattr('action_type', 'equalto', 'LOGOUT')|list|length }}</div>
+                    <div class="text-muted" style="font-size: 12px;">Logouts (24h)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Active Sessions -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-broadcast me-2" style="color: #10b981;"></i>Active Sessions</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_sessions %}
+                    <div class="row g-3">
+                        {% for s in active_sessions %}
+                        <div class="col-12">
+                            <div class="session-card {{ 'current' if s.session_id == session.get('session_id') else '' }}">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="device-icon" style="background: #f0f9ff; color: #0ea5e9;">
+                                        <i class="bi bi-{{ 'phone' if 'Mobile' in (s.user_agent or '') else 'laptop' }}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <strong style="font-size: 14px;">{{ s.name }}</strong>
+                                            <span class="badge bg-light text-dark" style="font-size: 10px;">{{ s.role_name }}</span>
+                                            <span class="status-dot active"></span>
+                                            {% if s.session_id == session.get('session_id') %}
+                                            <span class="badge bg-success" style="font-size: 10px;">You</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-muted" style="font-size: 12px;">
+                                            @{{ s.username }} &middot; {{ s.ip_address or 'Unknown IP' }}
+                                        </div>
+                                        <div class="text-muted" style="font-size: 11px;">
+                                            Last active: {{ s.last_activity }} &middot; Expires: {{ s.expires_at }}
+                                        </div>
+                                    </div>
+                                    {% if s.session_id != session.get('session_id') %}
+                                    <form action="{{ url_for('admin_terminate_session', session_id=s.session_id) }}" method="POST">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 11px; border-radius: 5px;"
+                                                onclick="return confirm('Terminate this session for {{ s.name }}?')">
+                                            <i class="bi bi-x-lg me-1"></i>Terminate
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-wifi-off" style="font-size: 32px; opacity: 0.3;"></i>
+                        <p class="mt-2 mb-0">No active sessions</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Activity -->
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Login Activity (24h)</h5>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if login_activity %}
+                    {% for item in login_activity %}
+                    <div class="activity-item">
+                        <div class="activity-icon {{ 'success' if item.action_type == 'LOGIN_SUCCESS' else ('failed' if item.action_type == 'LOGIN_FAILED' else 'logout') }}">
+                            <i class="bi bi-{{ 'check-lg' if item.action_type == 'LOGIN_SUCCESS' else ('x-lg' if item.action_type == 'LOGIN_FAILED' else 'box-arrow-right') }}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div>
+                                <strong>{{ item.username or 'Unknown' }}</strong>
+                                <span class="text-muted" style="font-size: 11px;">
+                                    {% if item.action_type == 'LOGIN_SUCCESS' %}logged in
+                                    {% elif item.action_type == 'LOGIN_FAILED' %}failed login
+                                    {% else %}logged out{% endif %}
+                                </span>
+                            </div>
+                            <div class="text-muted" style="font-size: 11px;">
+                                {{ item.timestamp }} &middot; {{ item.ip_address or 'Unknown' }}
+                            </div>
+                        </div>
+                        {% if item.action_type == 'LOGIN_FAILED' %}
+                        <span class="badge bg-danger" style="font-size: 9px;">FAILED</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <p class="mb-0">No login activity in the last 24 hours</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

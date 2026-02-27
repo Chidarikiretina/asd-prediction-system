@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: asd-screening-system
+    env: python
+    plan: free           # upgrade to 'starter' for persistent disk
+    region: frankfurt    # closest to Zimbabwe
+    buildCommand: bash build.sh
+    startCommand: gunicorn --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT --chdir src/api app:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.10"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: ASD_DB_PATH
+        value: /var/data/asd_system.db
+      - key: EMAIL_ENABLED
+        value: "false"
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+    # Persistent disk - requires paid plan (starter+). Remove if using free plan.
+    disk:
+      name: asd-data
+      mountPath: /var/data
+      sizeGB: 1

@@ -1,0 +1,111 @@
+# ASD Prediction System Configuration
+
+# Paths
+paths:
+  data:
+    raw: "data/raw"
+    processed: "data/processed"
+    external: "data/external"
+    validation: "data/validation"
+  models:
+    trained: "models/trained"
+    checkpoints: "models/checkpoints"
+  outputs:
+    reports: "outputs/reports"
+    visualizations: "outputs/visualizations"
+    predictions: "outputs/predictions"
+    logs: "outputs/logs"
+
+# Data Processing
+data_processing:
+  test_size: 0.2
+  validation_size: 0.1
+  random_state: 42
+  missing_value_strategy: "median"  # Options: mean, median, most_frequent
+  outlier_method: "iqr"  # Options: iqr, zscore
+
+# Feature Engineering
+features:
+  behavioral_features:
+    - eye_contact
+    - response_to_name
+    - pointing
+    - social_smile
+    - repetitive_behaviors
+    - joint_attention
+  demographic_features:
+    - age_months
+    - gender
+    - geographic_location
+  create_interactions: true
+  interaction_pairs:
+    - ["eye_contact", "social_smile"]
+    - ["response_to_name", "joint_attention"]
+
+# Model Parameters
+model:
+  xgboost:
+    objective: "binary:logistic"
+    eval_metric: "auc"
+    max_depth: 6
+    learning_rate: 0.1
+    n_estimators: 100
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+    use_label_encoder: false
+  
+  # Hyperparameter tuning grid
+  hyperparameter_grid:
+    max_depth: [3, 4, 5, 6, 7, 8]
+    learning_rate: [0.01, 0.05, 0.1, 0.2, 0.3]
+    n_estimators: [50, 100, 200, 300, 500]
+    subsample: [0.6, 0.7, 0.8, 0.9, 1.0]
+    colsample_bytree: [0.6, 0.7, 0.8, 0.9, 1.0]
+  
+  cross_validation_folds: 5
+
+# Evaluation Metrics
+evaluation:
+  primary_metric: "roc_auc"
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - roc_auc
+  target_performance:
+    sensitivity: 0.90  # Minimum recall
+    specificity: 0.85  # Derived from precision and recall
+    roc_auc: 0.92
+
+# Feature Selection
+feature_selection:
+  enabled: true
+  method: "importance"  # Options: importance, recursive, univariate
+  max_features: 15
+  min_importance_threshold: 0.01
+
+# Logging
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "outputs/logs/asd_system.log"
+
+# Cultural Adaptation (Future)
+cultural_adaptation:
+  enabled: false
+  language: "en"  # Options: en, sn (Shona), nd (Ndebele)
+  cultural_norms_file: null
+
+# Deployment (Future)
+deployment:
+  api:
+    host: "0.0.0.0"
+    port: 8000
+    debug: false
+  database:
+    type: "postgresql"  # Options: postgresql, mongodb
+    host: "localhost"
+    port: 5432
+  offline_mode: true

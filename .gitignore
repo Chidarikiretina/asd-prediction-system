@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data files - keep training data for deployment, ignore processed/outputs
+data/processed/*
+data/external/*
+data/validation/*
+!data/processed/.gitkeep
+!data/external/.gitkeep
+!data/validation/.gitkeep
+
+# Models (large binary files)
+models/trained/*.pkl
+models/trained/*.joblib
+models/trained/*.h5
+models/checkpoints/*
+models/experimental/*
+!models/trained/.gitkeep
+!models/checkpoints/.gitkeep
+!models/experimental/.gitkeep
+
+# Outputs
+outputs/reports/*
+outputs/visualizations/*
+outputs/predictions/*
+outputs/logs/*
+!outputs/reports/.gitkeep
+!outputs/visualizations/.gitkeep
+!outputs/predictions/.gitkeep
+!outputs/logs/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Logs
+*.log
+
+# Database (never commit - managed by Render disk or local)
+*.db
+*.sqlite3
+data/asd_system.db
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# OS specific
+Thumbs.db
+.DS_Store

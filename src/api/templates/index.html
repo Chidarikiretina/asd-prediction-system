@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening Assessment - ASD Early Screening System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --accent: #0ea5e9;
+            --accent-light: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-dark);
+        }
+
+        .header-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .header-brand-text {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .header-brand-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(30, 58, 95, 0.08);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 12px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .user-role {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 24px;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success { background: #f0fdf4; color: #166534; }
+        .alert-danger { background: #fef2f2; color: #991b1b; }
+        .alert-warning { background: #fffbeb; color: #92400e; }
+        .alert-info { background: #eff6ff; color: #1e40af; }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .form-card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-card-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(30, 58, 95, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .form-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .form-card-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .form-card-body {
+            padding: 24px;
+        }
+
+        /* Form Elements */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        /* Radio Button Groups */
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0;
+        }
+
+        .radio-option input:checked + label {
+            border-color: var(--primary);
+            background: rgba(30, 58, 95, 0.05);
+            color: var(--primary);
+        }
+
+        .radio-option.concern input:checked + label {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+            color: #b45309;
+        }
+
+        /* Behavioral Questions Grid */
+        .behavioral-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .behavioral-item {
+            background: var(--bg-light);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .behavioral-item-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .behavioral-item-label i {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            background: var(--primary);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Results Card */
+        .results-card {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .results-header {
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .risk-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .risk-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .risk-high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .results-probability {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+
+        .results-probability-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .results-body {
+            padding: 24px;
+        }
+
+        .progress-bar-container {
+            background: var(--bg-light);
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .recommendation-box {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .recommendation-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .recommendation-text {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .disclaimer-box {
+            background: var(--bg-light);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-left: 3px solid var(--warning);
+        }
+
+        .btn-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: var(--bg-light);
+        }
+
+        /* Footer */
+        .app-footer {
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Dropdown */
+        .dropdown-menu {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 8px;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-light);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #fef2f2;
+        }
+
+        @media (max-width: 768px) {
+            .behavioral-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-brand-text {
+                display: none;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <a href="/screening" class="header-brand">
+                <img src="{{ url_for('static', filename='img/mohcc_logo.png') }}" alt="MoHCC" style="width: 38px; height: 38px; object-fit: contain; border-radius: 4px;">
+                <div>
+                    <div class="header-brand-text">ASD Screening System</div>
+                    <div class="header-brand-subtitle">Ministry of Health and Child Care</div>
+                </div>
+            </a>
+
+            <nav class="header-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">{{ t.dashboard if t else 'Dashboard' }}</a>
+                <a href="{{ url_for('screening') }}" class="nav-link active">{{ t.new_screening if t else 'Screening' }}</a>
+                <a href="{{ url_for('history') }}" class="nav-link">{{ t.history if t else 'History' }}</a>
+                <a href="{{ url_for('about') }}" class="nav-link">{{ t.about if t else 'About' }}</a>
+
+                <!-- Language Selector -->
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size: 13px; padding: 6px 12px; border-radius: 6px;">
+                        <i class="bi bi-globe me-1"></i>
+                        {{ current_lang|upper if current_lang else 'EN' }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% for lang in available_languages %}
+                        <li><a class="dropdown-item {% if current_lang == lang.code %}active{% endif %}" href="{{ url_for('set_language', lang=lang.code) }}">{{ lang.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <div class="user-menu" data-bs-toggle="dropdown">
+                        <div class="user-avatar">{{ user[0]|upper if user else 'U' }}</div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user|default('User') }}</div>
+                            <div class="user-role">Healthcare Provider</div>
+                        </div>
+                        <i class="bi bi-chevron-down" style="font-size: 12px; color: var(--text-muted);"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text text-muted" style="font-size: 12px;">Signed in as {{ user|default('User') }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>{{ t.logout if t else 'Sign Out' }}</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="page-header">
+            <h1 class="page-title">New Screening Assessment</h1>
+            <p class="page-subtitle">Complete the form below to assess ASD risk for children aged 18-36 months</p>
+        </div>
+
+        <form id="screeningForm">
+            <!-- Child Information -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-card-icon">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div>
+                        <h2 class="form-card-title">Child Information</h2>
+                        <p class="form-card-subtitle">Basic demographic details</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Child's Name <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="child_name" required placeholder="Full name of the child">
+                        </div>
+                        <div class="form-group">
+                            <label>Age <span class="required">*</span></label>
+                            <input type="number" class="form-control" name="age_months" min="18" max="36" required placeholder="Age in months (18-36)">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender <span class="required">*</span></label>
+                            <select class="form-select" name="gender" required>
+                                <option value="">Select gender</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Father's Name</label>
+                            <input type="text" class="form-control" name="father_name" placeholder="Father's full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Mother's Name</label>
+                            <input type="text" class="form-control" name="mother_name" placeholder="Mother's full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Family History of ASD</label>
+                            <select class="form-select" name="family_history_asd">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- M-CHAT-R/F Screening Questions -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-card-icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h2 class="form-card-title">M-CHAT-R/F Screening Questions</h2>
+                        <p class="form-card-subtitle">Modified Checklist for Autism in Toddlers, Revised with Follow-Up (Standard 20 Questions)</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Please answer all questions based on how your child usually behaves. If the behavior is rare (e.g., seen only once or twice), answer as if the child does not do it.
+                    </div>
+                    <div class="behavioral-grid">
+                        <!-- Q1: Pointing -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">1</span>
+                                If you point at something across the room, does your child look at it?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q1" value="0" id="mchat_q1_yes" checked>
+                                    <label for="mchat_q1_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q1" value="1" id="mchat_q1_no">
+                                    <label for="mchat_q1_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q2: Hearing (REVERSE SCORED - Yes = concern) -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">2</span>
+                                Have you ever wondered if your child might be deaf?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q2" value="0" id="mchat_q2_no" checked>
+                                    <label for="mchat_q2_no">No</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q2" value="1" id="mchat_q2_yes">
+                                    <label for="mchat_q2_yes">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q3: Pretend Play -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">3</span>
+                                Does your child play pretend or make-believe? (e.g., feed a doll, talk on toy phone)
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q3" value="0" id="mchat_q3_yes" checked>
+                                    <label for="mchat_q3_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q3" value="1" id="mchat_q3_no">
+                                    <label for="mchat_q3_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q4: Climbing -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">4</span>
+                                Does your child like climbing on things? (e.g., furniture, playground equipment, stairs)
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q4" value="0" id="mchat_q4_yes" checked>
+                                    <label for="mchat_q4_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q4" value="1" id="mchat_q4_no">
+                                    <label for="mchat_q4_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q5: Unusual finger movements (REVERSE SCORED - Yes = concern) -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">5</span>
+                                Does your child make unusual finger movements near their eyes?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q5" value="0" id="mchat_q5_no" checked>
+                                    <label for="mchat_q5_no">No</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q5" value="1" id="mchat_q5_yes">
+                                    <label for="mchat_q5_yes">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q6: Point to ask -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">6</span>
+                                Does your child point with one finger to ask for something or to get help?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q6" value="0" id="mchat_q6_yes" checked>
+                                    <label for="mchat_q6_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q6" value="1" id="mchat_q6_no">
+                                    <label for="mchat_q6_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q7: Point to show -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">7</span>
+                                Does your child point with one finger to show you something interesting?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q7" value="0" id="mchat_q7_yes" checked>
+                                    <label for="mchat_q7_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q7" value="1" id="mchat_q7_no">
+                                    <label for="mchat_q7_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q8: Interest in other children -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">8</span>
+                                Is your child interested in other children? (watches, approaches, plays with)
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q8" value="0" id="mchat_q8_yes" checked>
+                                    <label for="mchat_q8_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q8" value="1" id="mchat_q8_no">
+                                    <label for="mchat_q8_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q9: Showing things -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">9</span>
+                                Does your child show you things by bringing them to you or holding them up?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q9" value="0" id="mchat_q9_yes" checked>
+                                    <label for="mchat_q9_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q9" value="1" id="mchat_q9_no">
+                                    <label for="mchat_q9_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q10: Response to name -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">10</span>
+                                Does your child respond when you call his or her name?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q10" value="0" id="mchat_q10_yes" checked>
+                                    <label for="mchat_q10_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q10" value="1" id="mchat_q10_no">
+                                    <label for="mchat_q10_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q11: Social smile -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">11</span>
+                                When you smile at your child, does he or she smile back at you?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q11" value="0" id="mchat_q11_yes" checked>
+                                    <label for="mchat_q11_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q11" value="1" id="mchat_q11_no">
+                                    <label for="mchat_q11_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q12: Upset by everyday sounds (REVERSE SCORED - Yes = concern) -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">12</span>
+                                Does your child get upset by everyday sounds? (e.g., vacuum, loud music)
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q12" value="0" id="mchat_q12_no" checked>
+                                    <label for="mchat_q12_no">No</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q12" value="1" id="mchat_q12_yes">
+                                    <label for="mchat_q12_yes">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q13: Walking -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">13</span>
+                                Does your child walk?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q13" value="0" id="mchat_q13_yes" checked>
+                                    <label for="mchat_q13_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q13" value="1" id="mchat_q13_no">
+                                    <label for="mchat_q13_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q14: Eye contact -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">14</span>
+                                Does your child look you in the eye when you are talking, playing, or dressing?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q14" value="0" id="mchat_q14_yes" checked>
+                                    <label for="mchat_q14_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q14" value="1" id="mchat_q14_no">
+                                    <label for="mchat_q14_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q15: Imitation -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">15</span>
+                                Does your child try to copy what you do? (e.g., wave bye-bye, clap, make sounds)
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q15" value="0" id="mchat_q15_yes" checked>
+                                    <label for="mchat_q15_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q15" value="1" id="mchat_q15_no">
+                                    <label for="mchat_q15_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q16: Joint attention - look at you -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">16</span>
+                                If you turn your head to look at something, does your child look around to see what you are looking at?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q16" value="0" id="mchat_q16_yes" checked>
+                                    <label for="mchat_q16_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q16" value="1" id="mchat_q16_no">
+                                    <label for="mchat_q16_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q17: Get your attention -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">17</span>
+                                Does your child try to get you to watch him or her? ("Look at me!")
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q17" value="0" id="mchat_q17_yes" checked>
+                                    <label for="mchat_q17_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q17" value="1" id="mchat_q17_no">
+                                    <label for="mchat_q17_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q18: Understanding -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">18</span>
+                                Does your child understand when you tell him or her to do something?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q18" value="0" id="mchat_q18_yes" checked>
+                                    <label for="mchat_q18_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q18" value="1" id="mchat_q18_no">
+                                    <label for="mchat_q18_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q19: Social referencing -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">19</span>
+                                If something new happens, does your child look at your face to see how you feel?
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q19" value="0" id="mchat_q19_yes" checked>
+                                    <label for="mchat_q19_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q19" value="1" id="mchat_q19_no">
+                                    <label for="mchat_q19_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q20: Movement activities -->
+                        <div class="behavioral-item">
+                            <div class="behavioral-item-label">
+                                <span class="badge bg-primary me-2">20</span>
+                                Does your child like movement activities? (being swung, bounced on knee)
+                            </div>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="mchat_q20" value="0" id="mchat_q20_yes" checked>
+                                    <label for="mchat_q20_yes">Yes</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="mchat_q20" value="1" id="mchat_q20_no">
+                                    <label for="mchat_q20_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="mb-2"><i class="bi bi-calculator me-2"></i>M-CHAT-R Scoring Guide</h6>
+                        <small class="text-muted">
+                            <strong>Low Risk (0-2):</strong> If screen negative, no further action required unless surveillance indicates ASD risk.<br>
+                            <strong>Medium Risk (3-7):</strong> Administer Follow-Up (M-CHAT-R/F) to get additional information.<br>
+                            <strong>High Risk (8-20):</strong> Bypass Follow-Up and refer immediately for diagnostic evaluation.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-card-icon">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <div>
+                        <h2 class="form-card-title">Additional Information</h2>
+                        <p class="form-card-subtitle">Optional supplementary observations</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Approximate Word Count (Optional)</label>
+                            <input type="number" class="form-control" name="word_count" min="0" max="500" placeholder="Number of words child uses">
+                        </div>
+                        <div class="form-group">
+                            <label>Language Regression</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="language_regression" value="0" id="regression_0" checked>
+                                    <label for="regression_0">No</label>
+                                </div>
+                                <div class="radio-option concern">
+                                    <input type="radio" name="language_regression" value="1" id="regression_1">
+                                    <label for="regression_1">Yes</label>
+                                </div>
+                            </div>
+                            <small class="text-muted">Has the child lost words or skills they previously had?</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="text-center">
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="bi bi-search"></i>
+                    Analyze Risk
+                </button>
+            </div>
+        </form>
+
+        <!-- Results -->
+        <div class="results-card" id="resultsCard">
+            <div class="results-header">
+                <div class="results-risk-badge" id="riskBadge">
+                    <i class="bi bi-shield-check"></i>
+                    <span id="riskLevel">-</span>
+                </div>
+                <div class="results-probability" id="probability">-</div>
+                <div class="results-probability-label">Risk Probability</div>
+            </div>
+            <div class="results-body">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+                </div>
+
+                <div class="recommendation-box" id="recommendationBox">
+                    <div class="recommendation-title">Recommendation</div>
+                    <p class="recommendation-text" id="recommendationText">-</p>
+                </div>
+
+                <div class="disclaimer-box">
+                    <strong>Important:</strong> This screening tool provides risk assessment only and does not constitute a clinical diagnosis.
+                    All results should be reviewed by qualified healthcare professionals. A comprehensive evaluation by specialists is required for formal ASD diagnosis.
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="button" class="btn-reset" onclick="resetForm()">
+                        <i class="bi bi-arrow-repeat"></i>
+                        New Assessment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <span>ASD Early Screening System v1.0</span>
+            <span>&copy; 2026 Zimbabwe Ministry of Health</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('screeningForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
+
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            // Calculate M-CHAT-R score from the 20 questions
+            let mchatScore = 0;
+            for (let i = 1; i <= 20; i++) {
+                const qValue = parseInt(data['mchat_q' + i] || 0);
+                mchatScore += qValue;
+            }
+            data.mchat_score = mchatScore;
+
+            // Set defaults for optional fields
+            if (!data.word_count) data.word_count = 50;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResults(result);
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Connection error: ' + error.message);
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-search"></i> Analyze Risk';
+        });
+
+        function displayResults(result) {
+            const resultsCard = document.getElementById('resultsCard');
+            resultsCard.style.display = 'block';
+
+            // Risk badge
+            const riskBadge = document.getElementById('riskBadge');
+            riskBadge.className = 'results-risk-badge risk-' + result.risk_level.toLowerCase();
+            document.getElementById('riskLevel').textContent = result.risk_level + ' Risk';
+
+            // Probability
+            document.getElementById('probability').textContent = result.probability + '%';
+
+            // Progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = result.probability + '%';
+            progressBar.style.background = result.risk_color === 'success' ? '#10b981' :
+                                           result.risk_color === 'warning' ? '#f59e0b' : '#ef4444';
+
+            // Recommendation
+            const recommendationBox = document.getElementById('recommendationBox');
+            recommendationBox.style.background = result.risk_color === 'success' ? '#f0fdf4' :
+                                                 result.risk_color === 'warning' ? '#fffbeb' : '#fef2f2';
+            recommendationBox.style.borderLeft = '4px solid ' + (result.risk_color === 'success' ? '#10b981' :
+                                                                  result.risk_color === 'warning' ? '#f59e0b' : '#ef4444');
+            document.getElementById('recommendationText').textContent = result.recommendation;
+
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetForm() {
+            document.getElementById('screeningForm').reset();
+            document.getElementById('resultsCard').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.map(function (el) {
+            return new bootstrap.Tooltip(el);
+        });
+    </script>
+</body>
+</html>
