@@ -654,6 +654,15 @@ def change_password_page():
                 resource_type='auth',
                 success=True
             )
+            # change_password() invalidates ALL sessions for security.
+            # Create a fresh session so the user stays logged in.
+            new_session_id = create_session(
+                g.db,
+                session.get('user_id'),
+                ip_address=request.remote_addr,
+                user_agent=request.user_agent.string if request.user_agent else None
+            )
+            session['session_id'] = new_session_id
             session['must_change_password'] = False
             flash('Password changed successfully.', 'success')
             return redirect(url_for('dashboard'))
