@@ -1777,6 +1777,30 @@ with app.app_context():
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
 
+    # Allow admin password reset via environment variable (for Render / emergency use).
+    # Set ADMIN_RESET_PASSWORD in environment, redeploy, then remove the variable.
+    _reset_pw = os.getenv('ADMIN_RESET_PASSWORD', '').strip()
+    if _reset_pw:
+        try:
+            from auth.password_security import PasswordHasher
+            _hasher = PasswordHasher()
+            _pw_hash = _hasher.hash_password(_reset_pw)
+            _rc = get_db_connection()
+            _rc.execute("""
+                UPDATE users SET
+                    password_hash        = ?,
+                    failed_attempts      = 0,
+                    locked_until         = NULL,
+                    must_change_password = 1,
+                    updated_at           = CURRENT_TIMESTAMP
+                WHERE username = 'admin'
+            """, (_pw_hash,))
+            _rc.commit()
+            _rc.close()
+            logger.info("Admin password reset via ADMIN_RESET_PASSWORD env var")
+        except Exception as e:
+            logger.error(f"Admin password reset failed: {e}")
+
     # Load ML model
     load_model()
 
