@@ -63,45 +63,56 @@ def authenticate_user(
         logger.warning(f"Login attempt for deactivated user: {username}")
         return (False, None, "Account has been deactivated. Contact administrator.")
 
-    # Check account lockout
-    locked_until = None
-    if user['locked_until']:
-        locked_until = datetime.fromisoformat(user['locked_until'])
+    # Admin accounts are never locked out — locking admin would make the
+    # system unmanageable. Failed attempts are still recorded for the audit log.
+    is_admin = user.get('role_name') == 'admin'
 
-    is_locked, minutes_remaining = lockout.check_lockout(
-        user['failed_login_attempts'],
-        locked_until
-    )
+    if not is_admin:
+        locked_until = None
+        if user['locked_until']:
+            locked_until = datetime.fromisoformat(user['locked_until'])
 
-    if is_locked:
-        logger.warning(f"Login attempt for locked account: {username}")
-        return (False, None, f"Account is locked. Try again in {minutes_remaining} minutes.")
+        is_locked, minutes_remaining = lockout.check_lockout(
+            user['failed_login_attempts'],
+            locked_until
+        )
+
+        if is_locked:
+            logger.warning(f"Login attempt for locked account: {username}")
+            return (False, None, f"Account is locked. Try again in {minutes_remaining} minutes.")
 
     # Verify password
     if not hasher.verify_password(password, user['password_hash']):
-        # Increment failed attempts
         new_attempts = user['failed_login_attempts'] + 1
 
-        # Check if should lock
-        if lockout.should_lock(new_attempts):
-            lock_until = lockout.get_lockout_until()
-            conn.execute("""
-                UPDATE users SET
-                    failed_login_attempts = ?,
-                    locked_until = ?
-                WHERE id = ?
-            """, (new_attempts, lock_until.isoformat(), user['id']))
-            conn.commit()
-            logger.warning(f"Account locked due to failed attempts: {username}")
-            return (False, None, f"Account locked due to too many failed attempts. Try again in {lockout.duration.seconds // 60} minutes.")
-        else:
+        if is_admin:
+            # Log the failure but never lock the admin account
             conn.execute("""
                 UPDATE users SET failed_login_attempts = ? WHERE id = ?
             """, (new_attempts, user['id']))
             conn.commit()
-            remaining = lockout.get_attempts_remaining(new_attempts)
-            logger.warning(f"Failed login attempt for user: {username} ({remaining} attempts remaining)")
-            return (False, None, f"Invalid username or password. {remaining} attempts remaining.")
+            logger.warning(f"Failed login attempt for admin account: {username} (attempt {new_attempts})")
+            return (False, None, "Invalid username or password.")
+        else:
+            if lockout.should_lock(new_attempts):
+                lock_until = lockout.get_lockout_until()
+                conn.execute("""
+                    UPDATE users SET
+                        failed_login_attempts = ?,
+                        locked_until = ?
+                    WHERE id = ?
+                """, (new_attempts, lock_until.isoformat(), user['id']))
+                conn.commit()
+                logger.warning(f"Account locked due to failed attempts: {username}")
+                return (False, None, f"Account locked due to too many failed attempts. Try again in {lockout.duration.seconds // 60} minutes.")
+            else:
+                conn.execute("""
+                    UPDATE users SET failed_login_attempts = ? WHERE id = ?
+                """, (new_attempts, user['id']))
+                conn.commit()
+                remaining = lockout.get_attempts_remaining(new_attempts)
+                logger.warning(f"Failed login attempt for user: {username} ({remaining} attempts remaining)")
+                return (False, None, f"Invalid username or password. {remaining} attempts remaining.")
 
     # Successful authentication
     # Reset failed attempts and update last login
