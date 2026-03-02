@@ -15,10 +15,10 @@ CREATE TABLE IF NOT EXISTS roles (
 
 -- Default roles
 INSERT OR IGNORE INTO roles (name, display_name, description) VALUES
-    ('admin', 'System Administrator', 'Full system access including user management and audit logs'),
-    ('pediatrician', 'Pediatrician', 'Full screening access, can view all records and export data'),
-    ('nurse', 'Nurse', 'Can create and view own screenings'),
-    ('chw', 'Community Health Worker', 'Basic screening capabilities, view own records only');
+    ('admin', 'System Administrator', 'System administration only: user management, audit logs, settings. Cannot perform clinical screenings (Separation of Duties).'),
+    ('pediatrician', 'Pediatrician', 'Full clinical access: create/view all screenings, export data, generate reports. Cannot manage users or view audit logs.'),
+    ('nurse', 'Nurse', 'Clinical access: create screenings, view own records, generate reports for own patients. Cannot view other users screenings.'),
+    ('chw', 'Community Health Worker', 'Basic clinical access: create screenings and view own records only. No reporting or export capabilities.');
 
 -- =====================================================
 -- USERS TABLE
@@ -89,11 +89,20 @@ CREATE TABLE IF NOT EXISTS role_permissions (
     UNIQUE(role_id, permission_id)
 );
 
--- Admin permissions (all)
+-- =====================================================
+-- ROLE PERMISSION ASSIGNMENTS (Separation of Duties)
+-- =====================================================
+-- Admin: system administration ONLY — no clinical work.
+--   Manages users and audits but cannot create or view screenings.
 INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'admin';
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.name = 'admin' AND p.name IN (
+    'user.create', 'user.edit', 'user.view', 'user.deactivate',
+    'audit.view', 'settings.manage'
+);
 
--- Pediatrician permissions
+-- Pediatrician: full clinical access — all screenings, export, reports.
+--   Cannot manage users or view audit logs.
 INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p
 WHERE r.name = 'pediatrician' AND p.name IN (
@@ -101,14 +110,16 @@ WHERE r.name = 'pediatrician' AND p.name IN (
     'screening.export', 'report.generate', 'report.view'
 );
 
--- Nurse permissions
+-- Nurse: create and view own screenings, generate reports for own patients.
+--   Cannot view all screenings or export system-wide data.
 INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p
 WHERE r.name = 'nurse' AND p.name IN (
-    'screening.create', 'screening.view', 'report.view'
+    'screening.create', 'screening.view', 'report.generate', 'report.view'
 );
 
--- CHW permissions
+-- CHW (Community Health Worker): create screenings and view own records only.
+--   Most restricted clinical role — no reporting or export.
 INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p
 WHERE r.name = 'chw' AND p.name IN (

@@ -151,6 +151,57 @@ def migrate_legacy_users(conn: Optional[sqlite3.Connection] = None) -> Dict:
     return result
 
 
+def fix_role_permissions(conn: sqlite3.Connection) -> Dict:
+    """
+    Enforce Separation of Duties by correcting role permissions.
+
+    - Removes clinical (screening/report) permissions from admin role.
+    - Adds report.generate to nurse role.
+    - Safe to run multiple times (idempotent).
+    """
+    result = {'fixed': False, 'changes': [], 'errors': []}
+    try:
+        # --- Admin: remove screening and report permissions (SoD) ---
+        admin_clinical = [
+            'screening.create', 'screening.view', 'screening.view_all',
+            'screening.export', 'report.generate', 'report.view'
+        ]
+        placeholders = ','.join('?' * len(admin_clinical))
+        cursor = conn.execute(f"""
+            DELETE FROM role_permissions
+            WHERE role_id = (SELECT id FROM roles WHERE name = 'admin')
+              AND permission_id IN (
+                  SELECT id FROM permissions WHERE name IN ({placeholders})
+              )
+        """, admin_clinical)
+        if cursor.rowcount > 0:
+            result['changes'].append(f"Removed {cursor.rowcount} clinical permission(s) from admin role")
+
+        # --- Nurse: add report.generate if missing ---
+        conn.execute("""
+            INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
+            SELECT r.id, p.id FROM roles r, permissions p
+            WHERE r.name = 'nurse' AND p.name = 'report.generate'
+        """)
+
+        conn.commit()
+        result['fixed'] = True
+        logger.info("Role permissions fixed for Separation of Duties")
+    except Exception as e:
+        logger.error(f"fix_role_permissions failed: {e}")
+        result['errors'].append(str(e))
+        conn.rollback()
+
+    # Clear the permissions cache so users see updated permissions immediately
+    try:
+        from auth.authorization import clear_permissions_cache
+        clear_permissions_cache()
+    except Exception:
+        pass
+
+    return result
+
+
 def run_migrations(conn: Optional[sqlite3.Connection] = None) -> Dict:
     """
     Run all pending migrations.
@@ -183,7 +234,11 @@ def run_migrations(conn: Optional[sqlite3.Connection] = None) -> Dict:
         user_migration = migrate_legacy_users(conn)
         results['users_migration'] = user_migration
 
-        results['success'] = user_migration['success']
+        # Enforce Separation of Duties — fix role permissions on existing databases
+        sod_result = fix_role_permissions(conn)
+        results['sod_migration'] = sod_result
+
+        results['success'] = user_migration['success'] and sod_result['fixed']
 
     except Exception as e:
         logger.error(f"Migration failed: {e}")

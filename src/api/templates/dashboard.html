@@ -154,15 +154,19 @@
                     <a href="{{ url_for('dashboard') }}" class="nav-link active">
                         <i class="bi bi-grid me-1"></i> Dashboard
                     </a>
+                    {% if can_screen %}
                     <a href="{{ url_for('screening') }}" class="nav-link">
                         <i class="bi bi-clipboard-plus me-1"></i> New Screening
                     </a>
+                    {% endif %}
+                    {% if can_view_history %}
                     <a href="{{ url_for('history') }}" class="nav-link">
                         <i class="bi bi-clock-history me-1"></i> History
                     </a>
                     <a href="{{ url_for('patients') }}" class="nav-link">
                         <i class="bi bi-people me-1"></i> Patients
                     </a>
+                    {% endif %}
                     <a href="{{ url_for('about') }}" class="nav-link">
                         <i class="bi bi-info-circle me-1"></i> About
                     </a>
@@ -232,20 +236,135 @@
             <div class="d-flex justify-content-between align-items-start mb-4">
                 <div>
                     <h1 class="page-title">Dashboard</h1>
-                    <p class="page-subtitle">Welcome back, {{ user }}. Here's your screening overview.</p>
+                    {% if is_admin_view %}
+                    <p class="page-subtitle">Welcome back, {{ user }}. System administration overview.</p>
+                    {% else %}
+                    <p class="page-subtitle">
+                        Welcome back, {{ user }}.
+                        {% if scope_label %}
+                        <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:500;padding:3px 8px;border-radius:12px;margin-left:6px;">
+                            <i class="bi bi-funnel me-1"></i>{{ scope_label }}
+                        </span>
+                        {% endif %}
+                    </p>
+                    {% endif %}
                 </div>
                 <div class="quick-actions">
+                    {% if is_admin_view %}
+                    <a href="{{ url_for('admin_users') }}" class="btn-secondary-custom">
+                        <i class="bi bi-people"></i> Users
+                    </a>
+                    <a href="{{ url_for('admin_audit') }}" class="btn-primary-custom">
+                        <i class="bi bi-journal-text"></i> Audit Logs
+                    </a>
+                    {% else %}
+                    {% if can_view_history %}
                     <a href="{{ url_for('patients') }}" class="btn-secondary-custom">
-                        <i class="bi bi-people"></i>
-                        Patients
+                        <i class="bi bi-people"></i> Patients
                     </a>
+                    {% endif %}
+                    {% if can_screen %}
                     <a href="{{ url_for('screening') }}" class="btn-primary-custom">
-                        <i class="bi bi-plus-lg"></i>
-                        New Screening
+                        <i class="bi bi-plus-lg"></i> New Screening
                     </a>
+                    {% endif %}
+                    {% endif %}
                 </div>
             </div>
 
+            {% if is_admin_view %}
+            <!-- ===== ADMIN DASHBOARD: User Management Stats ===== -->
+            <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Total Users</span>
+                        <div class="stat-card-icon primary"><i class="bi bi-people"></i></div>
+                    </div>
+                    <div class="stat-card-value">{{ admin_stats.total_users }}</div>
+                    <div class="stat-card-change">{{ admin_stats.active_users }} active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Active Sessions</span>
+                        <div class="stat-card-icon success"><i class="bi bi-activity"></i></div>
+                    </div>
+                    <div class="stat-card-value" style="color:var(--success);">{{ admin_stats.active_sessions }}</div>
+                    <div class="stat-card-change">Currently online</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Locked Accounts</span>
+                        <div class="stat-card-icon danger"><i class="bi bi-lock"></i></div>
+                    </div>
+                    <div class="stat-card-value" style="color:var(--danger);">{{ admin_stats.locked_accounts }}</div>
+                    <div class="stat-card-change">Require attention</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Password Resets</span>
+                        <div class="stat-card-icon warning"><i class="bi bi-key"></i></div>
+                    </div>
+                    <div class="stat-card-value" style="color:var(--warning);">{{ admin_stats.pending_resets }}</div>
+                    <div class="stat-card-change">Pending approval</div>
+                </div>
+            </div>
+
+            <!-- User breakdown by role -->
+            <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:28px;">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3 class="chart-card-title">Users by Role</h3>
+                    </div>
+                    <div class="risk-distribution" style="padding-top:8px;">
+                        {% set total_u = admin_stats.total_users if admin_stats.total_users > 0 else 1 %}
+                        {% for role_name, count in admin_stats.users_by_role.items() %}
+                        <div class="risk-item">
+                            <span class="risk-label" style="width:130px;text-transform:capitalize;">
+                                {% if role_name == 'admin' %}Administrator
+                                {% elif role_name == 'pediatrician' %}Pediatrician
+                                {% elif role_name == 'nurse' %}Nurse
+                                {% elif role_name == 'chw' %}CHW
+                                {% else %}{{ role_name }}{% endif %}
+                            </span>
+                            <div class="risk-bar">
+                                <div class="risk-bar-fill" style="width:{{ (count / total_u * 100)|round|int }}%;background:var(--accent);"></div>
+                            </div>
+                            <span class="risk-value">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Quick admin links -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3 class="chart-card-title">Administration</h3>
+                    </div>
+                    <div class="d-flex flex-column gap-2" style="padding-top:8px;">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="bi bi-people me-2"></i>Manage Users
+                        </a>
+                        <a href="{{ url_for('admin_password_requests') }}" class="btn btn-outline-warning btn-sm text-start">
+                            <i class="bi bi-key me-2"></i>Password Requests
+                            {% if admin_stats.pending_resets > 0 %}
+                            <span class="badge bg-warning text-dark ms-1">{{ admin_stats.pending_resets }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('admin_audit') }}" class="btn btn-outline-secondary btn-sm text-start">
+                            <i class="bi bi-journal-text me-2"></i>Audit Logs
+                        </a>
+                        <a href="{{ url_for('admin_activity') }}" class="btn btn-outline-secondary btn-sm text-start">
+                            <i class="bi bi-activity me-2"></i>Active Sessions
+                            {% if admin_stats.active_sessions > 0 %}
+                            <span class="badge bg-success ms-1">{{ admin_stats.active_sessions }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- ===== CLINICAL DASHBOARD: Screening Stats ===== -->
             <!-- Stats Cards - 5 columns -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -293,7 +412,9 @@
                     <div class="stat-card-change">Across all screenings</div>
                 </div>
             </div>
+            {% endif %}
 
+            {% if not is_admin_view %}
             <!-- Charts Section - Trend + Pie -->
             <div class="charts-grid">
                 <div class="chart-card">
@@ -410,6 +531,7 @@
                 </div>
                 {% endif %}
             </div>
+            {% endif %}{# end if not is_admin_view #}
         </div>
     </main>
 

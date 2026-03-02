@@ -143,15 +143,19 @@
                     <a href="{{ url_for('dashboard') }}" class="nav-link">
                         <i class="bi bi-grid me-1"></i> Dashboard
                     </a>
+                    {% if can_screen %}
                     <a href="{{ url_for('screening') }}" class="nav-link">
                         <i class="bi bi-clipboard-plus me-1"></i> New Screening
                     </a>
+                    {% endif %}
+                    {% if can_view_history %}
                     <a href="{{ url_for('history') }}" class="nav-link">
                         <i class="bi bi-clock-history me-1"></i> History
                     </a>
                     <a href="{{ url_for('patients') }}" class="nav-link">
                         <i class="bi bi-people me-1"></i> Patients
                     </a>
+                    {% endif %}
                     {% if is_admin %}
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
@@ -171,10 +175,28 @@
                 <div class="dropdown">
                     <div class="user-dropdown" data-bs-toggle="dropdown">
                         <div class="user-avatar">{{ user[0] if user else 'U' }}</div>
-                        <span class="d-none d-md-inline" style="font-size: 14px; color: var(--text-dark);">{{ user }}</span>
+                        <div class="d-none d-md-inline">
+                            <div style="font-size: 14px; color: var(--text-dark); line-height: 1.2;">{{ user }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: capitalize;">
+                                {% if user_role == 'admin' %}System Administrator
+                                {% elif user_role == 'pediatrician' %}Pediatrician
+                                {% elif user_role == 'nurse' %}Nurse
+                                {% elif user_role == 'chw' %}Community Health Worker
+                                {% else %}{{ user_role }}{% endif %}
+                            </div>
+                        </div>
                         <i class="bi bi-chevron-down" style="font-size: 12px; color: var(--text-muted);"></i>
                     </div>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text text-muted" style="font-size: 12px;">
+                            <i class="bi bi-shield-check me-1"></i>
+                            {% if user_role == 'admin' %}System Administrator
+                            {% elif user_role == 'pediatrician' %}Pediatrician
+                            {% elif user_role == 'nurse' %}Nurse
+                            {% elif user_role == 'chw' %}Community Health Worker
+                            {% else %}{{ user_role }}{% endif %}
+                        </span></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ url_for('change_password_page') }}"><i class="bi bi-key me-2"></i>Change Password</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>

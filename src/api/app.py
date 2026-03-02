@@ -440,9 +440,11 @@ def save_screening_record(data, result, user):
     return record
 
 
-def get_dashboard_stats():
-    """Calculate dashboard statistics."""
-    total = len(SCREENING_RECORDS)
+def get_dashboard_stats(records=None):
+    """Calculate dashboard statistics for the given records list."""
+    if records is None:
+        records = SCREENING_RECORDS
+    total = len(records)
     if total == 0:
         return {
             'total_screenings': 0,
@@ -457,13 +459,13 @@ def get_dashboard_stats():
             'avg_probability': 0
         }
 
-    high = sum(1 for r in SCREENING_RECORDS if r['risk_level'] == 'High')
-    medium = sum(1 for r in SCREENING_RECORDS if r['risk_level'] == 'Medium')
-    low = sum(1 for r in SCREENING_RECORDS if r['risk_level'] == 'Low')
+    high = sum(1 for r in records if r['risk_level'] == 'High')
+    medium = sum(1 for r in records if r['risk_level'] == 'Medium')
+    low = sum(1 for r in records if r['risk_level'] == 'Low')
     today = datetime.now().strftime('%Y-%m-%d')
-    today_count = sum(1 for r in SCREENING_RECORDS if r['date'] == today)
-    pending = sum(1 for r in SCREENING_RECORDS if r['status'] == 'Pending Review')
-    avg_prob = sum(r['probability'] for r in SCREENING_RECORDS) / total
+    today_count = sum(1 for r in records if r['date'] == today)
+    pending = sum(1 for r in records if r['status'] == 'Pending Review')
+    avg_prob = sum(r['probability'] for r in records) / total
 
     return {
         'total_screenings': total,
@@ -664,13 +666,48 @@ def change_password_page():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    """Dashboard with statistics."""
-    stats = get_dashboard_stats()
-    recent_records = SCREENING_RECORDS[:5]  # Last 5 records
-    return render_template('dashboard.html',
-                         user=session.get('name', 'User'),
-                         stats=stats,
-                         recent_records=recent_records)
+    """Role-specific dashboard."""
+    role = session.get('role', '')
+    user_id = session.get('user_id')
+
+    if role == 'admin':
+        # Admin sees system management stats — no clinical screening data
+        user_manager = UserManager(g.db)
+        admin_stats = user_manager.get_user_statistics()
+        cursor = g.db.execute(
+            "SELECT COUNT(*) FROM password_reset_requests WHERE status = 'pending'"
+        )
+        admin_stats['pending_resets'] = cursor.fetchone()[0]
+        cursor = g.db.execute(
+            "SELECT COUNT(*) FROM sessions WHERE is_active = 1 AND expires_at > ?",
+            (datetime.utcnow().isoformat(),)
+        )
+        admin_stats['active_sessions'] = cursor.fetchone()[0]
+        return render_template('dashboard.html',
+                             user=session.get('name', 'User'),
+                             is_admin_view=True,
+                             admin_stats=admin_stats,
+                             stats=None,
+                             recent_records=[])
+    else:
+        # Clinical roles — filter records based on view_all permission
+        can_view_all = has_permission(g.db, user_id, Permission.SCREENING_VIEW_ALL)
+        if can_view_all:
+            records = SCREENING_RECORDS
+            scope_label = 'All Facilities'
+        else:
+            records = [r for r in SCREENING_RECORDS
+                       if r.get('screener_username') == session.get('user')]
+            scope_label = 'Your Screenings Only'
+        stats = get_dashboard_stats(records)
+        recent_records = records[:5]
+        return render_template('dashboard.html',
+                             user=session.get('name', 'User'),
+                             is_admin_view=False,
+                             stats=stats,
+                             recent_records=recent_records,
+                             can_view_all=can_view_all,
+                             scope_label=scope_label)
 
 
 @app.route('/screening')
@@ -1331,12 +1368,22 @@ def inject_context():
     user_permissions = []
     is_admin = False
     can_export = False
+    can_screen = False
+    can_view_history = False
+    can_view_all = False
+    can_generate_reports = False
+    user_role = ''
 
     if 'user_id' in session and hasattr(g, 'db'):
         try:
             user_permissions = get_user_permissions(g.db, session.get('user_id'))
-            is_admin = session.get('role') == 'admin'
+            user_role = session.get('role', '')
+            is_admin = user_role == 'admin'
             can_export = Permission.SCREENING_EXPORT in user_permissions
+            can_screen = Permission.SCREENING_CREATE in user_permissions
+            can_view_history = Permission.SCREENING_VIEW in user_permissions
+            can_view_all = Permission.SCREENING_VIEW_ALL in user_permissions
+            can_generate_reports = Permission.REPORT_GENERATE in user_permissions
         except Exception:
             pass
 
@@ -1351,7 +1398,12 @@ def inject_context():
             {'code': 'nd', 'name': 'Ndebele'}
         ],
         'is_admin': is_admin,
+        'user_role': user_role,
         'can_export': can_export,
+        'can_screen': can_screen,
+        'can_view_history': can_view_history,
+        'can_view_all': can_view_all,
+        'can_generate_reports': can_generate_reports,
         'user_permissions': user_permissions
     }
 
